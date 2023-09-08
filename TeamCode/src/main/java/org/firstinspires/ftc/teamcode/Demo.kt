@@ -1,79 +1,94 @@
 package org.firstinspires.ftc.teamcode
 
+import com.acmerobotics.dashboard.FtcDashboard
+import com.acmerobotics.dashboard.canvas.Canvas
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket
 import com.acmerobotics.roadrunner.geometry.Pose2d
 import com.acmerobotics.roadrunner.geometry.Vector2d
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode
-import com.qualcomm.robotcore.hardware.DcMotor
-import com.qualcomm.robotcore.hardware.DcMotorEx
-import com.qualcomm.robotcore.hardware.DcMotorSimple
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive
-import org.firstinspires.ftc.teamcode.util.Encoder
+import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence
+import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequenceRunner.COLOR_INACTIVE_TRAJECTORY
+import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequenceRunner.COLOR_INACTIVE_TURN
+import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequenceRunner.COLOR_INACTIVE_WAIT
+import org.firstinspires.ftc.teamcode.trajectorysequence.sequencesegment.TrajectorySegment
+import org.firstinspires.ftc.teamcode.trajectorysequence.sequencesegment.TurnSegment
+import org.firstinspires.ftc.teamcode.trajectorysequence.sequencesegment.WaitSegment
+import org.firstinspires.ftc.teamcode.util.DashboardUtil
+import kotlin.math.PI
 
+@TeleOp
 class Demo : LinearOpMode() {
     companion object {
-        const val LES = "RF"
-        const val RES = "RB"
-        const val FES = "LB"
-        var LER = true
-        var RER = true
-        var FER = true
+        @JvmField
+        var P1H: Double = 10.0
+        @JvmField
+        var P1X: Double = 10.0
+        @JvmField
+        var P1Y: Double = PI / 4.0
+
+        @JvmField
+        var R1X: Double = 10.0
+        @JvmField
+        var R1Y: Double = PI / 4.0
+        @JvmField
+        var R2X: Double = 10.0
+        @JvmField
+        var R2Y: Double = -PI / 4.0
+
+        @JvmField
+        var RUN: Boolean = false
     }
-
-    private lateinit var rf: DcMotorEx
-    private lateinit var rb: DcMotorEx
-    private lateinit var lf: DcMotorEx
-    private lateinit var lb: DcMotorEx
-
-    private lateinit var le: Encoder
-    private lateinit var re: Encoder
-    private lateinit var fe: Encoder
 
     private lateinit var drive: SampleMecanumDrive
 
-    fun initm(name: String, reversed: Boolean, useEncoder: Boolean, overclock: Boolean): DcMotorEx {
-        val m = hardwareMap.get(DcMotorEx::class.java, name)
-
-        if (overclock) {
-            val mconf = m.motorType.clone()
-            mconf.achieveableMaxRPMFraction = 1.0
-            m.motorType = mconf
+    private val ITC = 1 / 2.54
+    private fun draw(
+            fieldOverlay: Canvas,
+            sequence: TrajectorySequence?
+    ) {
+        if (sequence != null) {
+            for (i in 0 until sequence.size()) {
+                val segment = sequence[i]
+                if (segment is TrajectorySegment) {
+                    fieldOverlay.setStrokeWidth(1)
+                    fieldOverlay.setStroke(COLOR_INACTIVE_TRAJECTORY)
+                    DashboardUtil.drawSampledPath(fieldOverlay, segment.trajectory.path)
+                } else if (segment is TurnSegment) {
+                    val (x, y) = segment.getStartPose()
+                    fieldOverlay.setFill(COLOR_INACTIVE_TURN)
+                    fieldOverlay.fillCircle(x * ITC, y * ITC, 2.0)
+                } else if (segment is WaitSegment) {
+                    val (x, y) = segment.getStartPose()
+                    fieldOverlay.setStrokeWidth(1)
+                    fieldOverlay.setStroke(COLOR_INACTIVE_WAIT)
+                    fieldOverlay.strokeCircle(x * ITC, y * ITC, 3.0)
+                }
+            }
         }
-
-        if (useEncoder) {
-            m.mode = DcMotor.RunMode.STOP_AND_RESET_ENCODER
-            m.mode = DcMotor.RunMode.RUN_USING_ENCODER
-        } else {
-            m.mode = DcMotor.RunMode.RUN_WITHOUT_ENCODER
-        }
-        m.zeroPowerBehavior = DcMotor.ZeroPowerBehavior.BRAKE
-        m.direction = if (reversed) DcMotorSimple.Direction.REVERSE else DcMotorSimple.Direction.FORWARD
-
-        return m
-    }
-
-    fun inite(name: String, reversed: Boolean): Encoder {
-        val e = Encoder(hardwareMap.get(DcMotorEx::class.java, name))
-        e.direction = if (reversed) Encoder.Direction.REVERSE else Encoder.Direction.FORWARD
-        return e
     }
 
     override fun runOpMode() {
-        rf = initm("RF", reversed = true, useEncoder = false, overclock = true)
-        rb = initm("RB", reversed = true, useEncoder = false, overclock = true)
-        lf = initm("LF", reversed = false, useEncoder = false, overclock = true)
-        lb = initm("LB", reversed = false, useEncoder = false, overclock = true)
-        le = inite(LES, LER)
-        re = inite(RES, RER)
-        fe = inite(FES, FER)
-
         drive = SampleMecanumDrive(hardwareMap)
-        val vv = SampleMecanumDrive.getVelocityConstraint(10.0, 10.0, 10.0)
-        val va = SampleMecanumDrive.getAccelerationConstraint(10.0)
-        val vd = SampleMecanumDrive.getAccelerationConstraint(10.0)
-        val tb = drive.trajectoryBuilder(Pose2d(0.0, 0.0, 0.0))
-                .lineTo(Vector2d(1.0, 0.0), vv, va, null)
 
+        waitForStart()
 
-
+        while (!isStopRequested) {
+            val vv = SampleMecanumDrive.getVelocityConstraint(10.0, 10.0, 10.0)
+            val va = SampleMecanumDrive.getAccelerationConstraint(10.0)
+            val vd = SampleMecanumDrive.getAccelerationConstraint(10.0)
+            val tb = drive.trajectorySequenceBuilder(Pose2d(0.0, 0.0, 0.0))
+                    .funnyRaikuCurveLinear(Pose2d(P1X, P1Y, P1H), Vector2d(R1X, R1Y), Vector2d(R2X, R2Y), vv, va, vd)
+                    .build()
+            val p = TelemetryPacket()
+            val canvas = p.fieldOverlay()
+            draw(canvas, tb)
+            FtcDashboard.getInstance().sendTelemetryPacket(p)
+            if (RUN) {
+                RUN = false
+                drive.followTrajectorySequence(tb)
+            }
+        }
     }
 }
