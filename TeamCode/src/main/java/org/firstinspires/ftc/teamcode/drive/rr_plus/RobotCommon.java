@@ -4,7 +4,6 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 //import org.firstinspires.ftc.teamcode.CameraPipelines.ImagePipeline;
-import org.firstinspires.ftc.teamcode.SkystoneDeterminationExample;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
@@ -70,7 +69,6 @@ abstract public class RobotCommon extends LinearOpMode {
      * Postcondition: camera has been properly assigned
      */
     private void initCamera(){
-        SkystoneDeterminationExample.SkystoneDeterminationPipeline pipeline;
         // Build the camera objects - most likely you won't need to change this, but if you've renamed your webcam then you will!
 //        WebcamName name = hardwareMap.get(WebcamName.class, "Webcam 1");
         webcameraName = hardwareMap.get(WebcamName.class, "Webcam 1");
@@ -80,8 +78,6 @@ abstract public class RobotCommon extends LinearOpMode {
 
         // Create a new camera object in openCV
         camera = OpenCvCameraFactory.getInstance().createWebcam(webcameraName, cameraMonitorViewId);
-        pipeline = new SkystoneDeterminationExample.SkystoneDeterminationPipeline();
-        camera.setPipeline(pipeline);
 
 
         // Start the camera stream or throws an error

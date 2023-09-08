@@ -363,7 +363,7 @@ public class TrajectorySequenceBuilder {
     }
 
     public TrajectorySequenceBuilder splineToConstantHeading(Vector2d endPosition, double endHeading) {
-        return addPath(() -> currentTrajectoryBuilder.splineToConstantHeading(endPosition, endHeading, currentVelConstraint, currentAccelConstraint));
+        return addPath(() -> currentTrajectoryBuilder.splineToConstantHeading(endPosition, endHeading, currentVelConstraint, currentAccelConstraint, currentDecelConstraint));
     }
 
     public TrajectorySequenceBuilder splineToConstantHeading(

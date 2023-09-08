@@ -92,8 +92,6 @@ public class StandardTrackingWheelLocalizer extends ThreeTrackingWheelLocalizer 
         );
     }
 
-    @NonNull
-    @Override
     public List<Double> getRunningTimes() {
         return Arrays.asList(1.0, 1.0, 1.0);
     }

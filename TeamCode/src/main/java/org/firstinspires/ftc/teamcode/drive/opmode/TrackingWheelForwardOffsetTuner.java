@@ -1,14 +1,7 @@
 package org.firstinspires.ftc.teamcode.drive.opmode;
 
-import static org.firstinspires.ftc.teamcode.mk3.RobotFuncs.endma;
-import static org.firstinspires.ftc.teamcode.mk3.RobotFuncs.initma;
-import static org.firstinspires.ftc.teamcode.mk3.RobotFuncs.log_state;
-import static org.firstinspires.ftc.teamcode.mk3.RobotFuncs.startma;
-
 import com.acmerobotics.dashboard.FtcDashboard;
-import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
-import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.util.Angle;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
@@ -19,7 +12,6 @@ import com.qualcomm.robotcore.util.RobotLog;
 import org.firstinspires.ftc.robotcore.internal.system.Misc;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.drive.StandardTrackingWheelLocalizer;
-import org.firstinspires.ftc.teamcode.mk3.RobotFuncs;
 
 /**
  * This routine determines the effective forward offset for the lateral tracking wheel.
@@ -59,9 +51,7 @@ public class TrackingWheelForwardOffsetTuner extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 
-        initma(hardwareMap);
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
-        RobotFuncs.drive = drive;
 
         if (!(drive.getLocalizer() instanceof StandardTrackingWheelLocalizer)) {
             RobotLog.setGlobalErrorMsg("StandardTrackingWheelLocalizer is not being set in the "
@@ -81,7 +71,6 @@ public class TrackingWheelForwardOffsetTuner extends LinearOpMode {
         waitForStart();
 
         if (isStopRequested()) return;
-        startma(this, telemetry);
 
         telemetry.clearAll();
         telemetry.addLine("Running...");
@@ -99,10 +88,9 @@ public class TrackingWheelForwardOffsetTuner extends LinearOpMode {
             drive.turnAsync(Math.toRadians(ANGLE));
 
             while (!isStopRequested() && drive.isBusy()) {
-                log_state();
 
                 double heading;
-                heading = drive.tl.getPoseEstimate().getHeading();
+                heading = drive.getPoseEstimate().getHeading();
                 headingAccumulator += Angle.norm(heading - lastHeading);
                 lastHeading = heading;
 
@@ -110,7 +98,7 @@ public class TrackingWheelForwardOffsetTuner extends LinearOpMode {
             }
 
             double forwardOffset = StandardTrackingWheelLocalizer.FORWARD_OFFSET +
-                    drive.tl.getPoseEstimate().getY() / headingAccumulator;
+                    drive.getPoseEstimate().getY() / headingAccumulator;
             forwardOffsetStats.add(forwardOffset);
             thead += headingAccumulator;
 
@@ -125,7 +113,6 @@ public class TrackingWheelForwardOffsetTuner extends LinearOpMode {
                 forwardOffsetStats.getStandardDeviation() / Math.sqrt(NUM_TRIALS)));
         telemetry.update();
 
-        endma();
         while (!isStopRequested()) {
             idle();
         }

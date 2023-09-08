@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode.drive.opmode;
 
-import static org.firstinspires.ftc.teamcode.mk3.RobotFuncs.initma;
-import static org.firstinspires.ftc.teamcode.mk3.RobotFuncs.startma;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
@@ -16,7 +14,6 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
-import org.firstinspires.ftc.teamcode.mk3.RobotFuncs;
 
 import java.util.Objects;
 
@@ -41,9 +38,7 @@ public class MaxVelocityTuner extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
-        initma(hardwareMap);
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
-        RobotFuncs.drive = drive;
 
         drive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
@@ -58,7 +53,6 @@ public class MaxVelocityTuner extends LinearOpMode {
         telemetry.update();
 
         waitForStart();
-        startma(this, telemetry);
 
         telemetry.clearAll();
         telemetry.update();

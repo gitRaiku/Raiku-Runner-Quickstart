@@ -12,12 +12,9 @@ import com.acmerobotics.roadrunner.util.NanoClock;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.util.RobotLog;
 
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
-import org.firstinspires.ftc.teamcode.mk3.RobotFuncs;
-import org.firstinspires.ftc.teamcode.util.Encoder;
 
 import java.util.Objects;
 
@@ -28,9 +25,6 @@ import static org.firstinspires.ftc.teamcode.drive.DriveConstants.RUN_USING_ENCO
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kA;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kStatic;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.kV;
-import static org.firstinspires.ftc.teamcode.mk3.RobotFuncs.initma;
-import static org.firstinspires.ftc.teamcode.mk3.RobotFuncs.log_state;
-import static org.firstinspires.ftc.teamcode.mk3.RobotFuncs.startma;
 
 /*
  * This routine is designed to tune the open-loop feedforward coefficients. Although it may seem unnecessary,
@@ -79,9 +73,7 @@ public class ManualFeedforwardTuner extends LinearOpMode {
 
         telemetry = new MultipleTelemetry(telemetry, dashboard.getTelemetry());
 
-        initma(hardwareMap);
         drive = new SampleMecanumDrive(hardwareMap);
-        RobotFuncs.drive = drive;
 
         mode = Mode.TUNING_MODE;
 
@@ -94,7 +86,6 @@ public class ManualFeedforwardTuner extends LinearOpMode {
         waitForStart();
 
         if (isStopRequested()) return;
-        startma(this, telemetry);
 
         boolean movingForwards = true;
         MotionProfile activeProfile = generateProfile(true);
@@ -139,7 +130,6 @@ public class ManualFeedforwardTuner extends LinearOpMode {
                     telemetry.addData("pX", drive.getPoseEstimate().getX());
                     telemetry.addData("pY", drive.getPoseEstimate().getY());
                     telemetry.addData("error", motionState.getV() - currentVelo);
-                    log_state();
                     break;
                 case DRIVER_MODE:
                     if (gamepad1.b) {
